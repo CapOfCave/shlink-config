@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  shlink-postgres-database:
+    container_name: shlink-postgres-database
+    image: postgres:14-alpine
+    restart: unless-stopped
+    volumes:
+      - /var/lib/shlink/postgresql/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=shlink
+      - POSTGRES_USER=shlink
+      - POSTGRES_PASSWORD 
+    expose:
+      - "5432"
+
+  my_shlink:
+    container_name: my_shlink
+    image: shlinkio/shlink:stable
+    restart: unless-stopped
+    environment:
+      - DEFAULT_DOMAIN=goto.kecker.me
+      - USE_HTTPS=true
+      - GEOLITE_LICENSE_KEY
+      - DB_DRIVER=postgres
+      - DB_HOST=shlink-postgres-database
+      - DB_PORT=5432
+      - DB_NAME=shlink
+      - DB_USER=shlink
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DISABLE_IP_TRACKING=true
+      - ENABLE_PERIODIC_VISIT_LOCATE=true
+    ports:
+      - "3333:8080"
+    depends_on:
+      - shlink-postgres-database
